@@ -1,8 +1,6 @@
 import 'package:ecommerce_app/bloc/cart/cart_bloc.dart';
 import 'package:ecommerce_app/bloc/cart/cart_event.dart';
-import 'package:ecommerce_app/bloc/cart/cart_state.dart';
 import 'package:ecommerce_app/helper/navigation_helper.dart';
-import 'package:ecommerce_app/models/cart_item.dart';
 import 'package:ecommerce_app/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -20,6 +18,7 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen>
     with SingleTickerProviderStateMixin {
+  int _quantity = 0;
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -60,102 +59,94 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: BlocBuilder<CartBloc, CartState>(
-              builder: (context, state) {
-                int productQuantity = 0;
-
-                if (state is CartLoaded) {
-                  final cartItem = state.items.firstWhere(
-                    (item) => item.product!.id == widget.product!.id,
-                    orElse: () =>
-                        CartItem(product: widget.product, quantity: 0),
-                  );
-                  productQuantity = cartItem.quantity ?? 0;
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Hero(
+                  tag: widget.product?.id ?? 0,
+                  child: Image.network(widget.product?.image ?? "",
+                      height: 300, fit: BoxFit.cover),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  widget.product?.title ?? "",
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '\$${widget.product?.price}',
+                  style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Product Description',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'This is a detailed description of the product. It provides information about the product\'s features, specifications, and benefits.',
+                  style: TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16),
+                Row(
                   children: [
-                    Hero(
-                      tag: widget.product?.id ?? 0,
-                      child: Image.network(widget.product?.image ?? "",
-                          height: 300, fit: BoxFit.cover),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      widget.product?.title ?? "",
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '\$${widget.product?.price}',
-                      style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 16),
                     const Text(
-                      'Product Description',
+                      'Quantity',
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'This is a detailed description of the product. It provides information about the product\'s features, specifications, and benefits.',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Text(
-                          'Quantity',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(width: 16),
-                        IconButton(
-                          icon: const Icon(Icons.remove),
-                          onPressed: () {
-                            context
-                                .read<CartBloc>()
-                                .add(RemoveProduct(widget.product));
-                          },
-                        ),
-                        Text(
-                          '$productQuantity',
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () {
-                            context
-                                .read<CartBloc>()
-                                .add(AddProduct(widget.product));
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
+                    const SizedBox(width: 16),
+                    IconButton(
+                      icon: const Icon(Icons.remove),
                       onPressed: () {
-                        for (int i = 0; i < productQuantity; i++) {
-                          context
-                              .read<CartBloc>()
-                              .add(AddProduct(widget.product));
-                        }
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(
-                              'Added $productQuantity ${widget.product!.title}(s) to cart'),
-                        ));
+                        setState(() {
+                          if (_quantity > 1) _quantity--;
+                        });
                       },
-                      child: const Text('Add to Cart'),
                     ),
-                    const SizedBox(height: 16),
-                    _buildRelatedProducts(),
+                    Text(
+                      '$_quantity',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () {
+                        setState(() {
+                          _quantity++;
+                        });
+                      },
+                    ),
                   ],
-                );
-              },
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_quantity > 0) {
+                      for (int i = 0; i < _quantity; i++) {
+                        context
+                            .read<CartBloc>()
+                            .add(AddProduct(widget.product));
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            'Added $_quantity ${widget.product!.title}(s) to cart'),
+                      ));
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content:
+                            Text('Please add a quantity for adding to cart'),
+                      ));
+                    }
+                  },
+                  child: const Text('Add to Cart'),
+                ),
+                const SizedBox(height: 16),
+                _buildRelatedProducts(),
+              ],
             ),
           ),
         ),
