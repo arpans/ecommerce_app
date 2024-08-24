@@ -22,7 +22,7 @@ class CustomNavigationHelper {
 
   static const String loginPath = '/signin';
   static const String signupPath = '/signup';
-  static const String dashboardPath = '/dashboard';
+  static const String productListing = '/productListing';
   static const String productDetails = '/productDetails';
   static const String cartPage = '/cartPage';
   static const String checkoutPage = '/checkoutPage';
@@ -47,7 +47,7 @@ class CustomNavigationHelper {
     if (token.isEmpty) {
       routerConfigVal = loginPath;
     } else {
-      routerConfigVal = dashboardPath;
+      routerConfigVal = productListing;
     }
     router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -76,7 +76,7 @@ class CustomNavigationHelper {
         ),
         GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
-          path: dashboardPath,
+          path: productListing,
           pageBuilder: (context, state) {
             return getPage(
               child: const ProductListScreen(),

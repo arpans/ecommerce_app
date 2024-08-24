@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen>
             if (state is AuthAuthenticated) {
               _controller.reverse();
               CustomNavigationHelper.router
-                  .go(CustomNavigationHelper.dashboardPath);
+                  .go(CustomNavigationHelper.productListing);
             } else if (state is AuthError) {
               _controller.reverse();
               ScaffoldMessenger.of(context).showSnackBar(

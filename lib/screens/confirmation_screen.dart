@@ -54,7 +54,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
           _isLoading = false;
         });
         _controller.reverse();
-        CustomNavigationHelper.router.go(CustomNavigationHelper.dashboardPath);
+        CustomNavigationHelper.router.go(CustomNavigationHelper.productListing);
       });
     });
   }
